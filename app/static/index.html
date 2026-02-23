@@ -74,13 +74,18 @@
                 padding: 0.75rem 1rem;
                 border-radius: 10px;
                 font-size: 0.97rem;
-                white-space: pre-wrap;
             }
+
+            .msg.assistant .content p { margin: 0.5em 0; }
+            .msg.assistant .content ul, .msg.assistant .content ol { margin: 0.5em 0 0.5em 1.5em; }
+            .msg.assistant .content li { margin: 0.25em 0; }
+            .msg.assistant .content code { background: #e8ddd0; padding: 0.1em 0.3em; border-radius: 3px; font-size: 0.9em; }
 
             .msg.user .content {
                 background: #3b1f0a;
                 color: #faf6f1;
                 border-bottom-right-radius: 2px;
+                white-space: pre-wrap;
             }
 
             .msg.assistant .content {
@@ -161,6 +166,7 @@
                 text-decoration: underline;
             }
         </style>
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     </head>
     <body>
         <header>
@@ -225,7 +231,7 @@
                     });
                     const data = await res.json();
                     sessionId = data.session_id;
-                    loading.querySelector(".content").textContent = data.response;
+                    loading.querySelector(".content").innerHTML = marked.parse(data.response);
                     loading.classList.remove("loading");
                 } catch (e) {
                     loading.querySelector(".content").textContent = "Error: " + e.message;

@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>BrewBot ☕ Specialty Coffee Expert</title>
+        <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+
+            body {
+                font-family: 'Georgia', serif;
+                background: #faf6f1;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 2rem 1rem;
+            }
+
+            header {
+                text-align: center;
+                margin-bottom: 1.5rem;
+            }
+
+            header h1 {
+                font-size: 1.8rem;
+                color: #3b1f0a;
+                letter-spacing: 0.02em;
+            }
+
+            header p {
+                color: #7a5c3e;
+                font-size: 0.95rem;
+                margin-top: 0.3rem;
+                font-style: italic;
+            }
+
+            #container {
+                width: 100%;
+                max-width: 780px;
+                background: #fff;
+                border: 1px solid #e4d5c3;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(59,31,10,0.07);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            #messages {
+                min-height: 420px;
+                max-height: 60vh;
+                overflow-y: auto;
+                padding: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1.25rem;
+            }
+
+            .msg { max-width: 80%; line-height: 1.6; }
+
+            .msg.user { align-self: flex-end; }
+
+            .msg .role {
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: #b08060;
+                margin-bottom: 0.3rem;
+                font-family: 'system-ui', sans-serif;
+            }
+
+            .msg .content {
+                padding: 0.75rem 1rem;
+                border-radius: 10px;
+                font-size: 0.97rem;
+                white-space: pre-wrap;
+            }
+
+            .msg.user .content {
+                background: #3b1f0a;
+                color: #faf6f1;
+                border-bottom-right-radius: 2px;
+            }
+
+            .msg.assistant .content {
+                background: #f5ede3;
+                color: #2c1a08;
+                border-bottom-left-radius: 2px;
+            }
+
+            .msg.loading .content { color: #b08060; font-style: italic; }
+
+            #suggestions {
+                padding: 0 1.5rem 1rem;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .suggestion {
+                background: #faf0e6;
+                border: 1px solid #e4c9a8;
+                color: #5c3a1e;
+                padding: 0.4rem 0.8rem;
+                border-radius: 20px;
+                font-size: 0.82rem;
+                cursor: pointer;
+                font-family: 'system-ui', sans-serif;
+                transition: background 0.15s;
+            }
+
+            .suggestion:hover { background: #f0dfc8; }
+
+            #input-area {
+                display: flex;
+                gap: 0.75rem;
+                padding: 1.25rem 1.5rem;
+                border-top: 1px solid #e4d5c3;
+                background: #fdf9f5;
+            }
+
+            #user-input {
+                flex: 1;
+                padding: 0.7rem 1rem;
+                border: 1px solid #d4b896;
+                border-radius: 8px;
+                font-size: 0.97rem;
+                font-family: 'Georgia', serif;
+                background: #fff;
+                outline: none;
+                color: #2c1a08;
+            }
+
+            #user-input:focus { border-color: #8b5e3c; }
+
+            #send-btn {
+                padding: 0.7rem 1.4rem;
+                background: #3b1f0a;
+                color: #faf6f1;
+                border: none;
+                border-radius: 8px;
+                font-size: 0.85rem;
+                font-family: 'system-ui', sans-serif;
+                letter-spacing: 0.05em;
+                cursor: pointer;
+                transition: background 0.15s;
+            }
+
+            #send-btn:hover { background: #5c3a1e; }
+            #send-btn:disabled { opacity: 0.35; cursor: default; }
+
+            #clear-btn {
+                background: none;
+                border: none;
+                color: #b08060;
+                font-size: 0.8rem;
+                cursor: pointer;
+                font-family: 'system-ui', sans-serif;
+                padding: 0.7rem 0.5rem;
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>☕ BrewBot</h1>
+            <p>Your friendly specialty coffee expert — ratios, recipes, and everything in between.</p>
+        </header>
+
+        <div id="container">
+            <div id="messages">
+                <div class="msg assistant">
+                    <div class="role">BrewBot</div>
+                    <div class="content">Hey there! I'm BrewBot ☕ — ask me anything about specialty coffee: brewing methods, grind sizes, ratios, flavor profiles, equipment, or troubleshooting. What are we brewing today?</div>
+                </div>
+            </div>
+
+            <div id="suggestions">
+                <button class="suggestion" onclick="sendSuggestion(this)">Why is my espresso sour?</button>
+                <button class="suggestion" onclick="sendSuggestion(this)">Best ratio for pour-over?</button>
+                <button class="suggestion" onclick="sendSuggestion(this)">Light vs dark roast?</button>
+                <button class="suggestion" onclick="sendSuggestion(this)">How do I make cold brew?</button>
+                <button class="suggestion" onclick="sendSuggestion(this)">What temp for brewing?</button>
+            </div>
+
+            <div id="input-area">
+                <input type="text" id="user-input" placeholder="Ask about coffee..." autocomplete="off" />
+                <button id="send-btn">Send</button>
+                <button id="clear-btn" onclick="clearChat()">New chat</button>
+            </div>
+        </div>
+
+        <script>
+            const messagesEl = document.getElementById("messages");
+            const userInput = document.getElementById("user-input");
+            const sendBtn = document.getElementById("send-btn");
+            const suggestionsEl = document.getElementById("suggestions");
+            let sessionId = null;
+
+            function addMessage(role, text, isLoading = false) {
+                const div = document.createElement("div");
+                div.className = "msg " + role + (isLoading ? " loading" : "");
+                div.innerHTML =
+                    '<div class="role">' + (role === "user" ? "You" : "BrewBot") + "</div>" +
+                    '<div class="content">' + text + "</div>";
+                messagesEl.appendChild(div);
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+                return div;
+            }
+
+            async function send(text) {
+                if (!text) return;
+                userInput.value = "";
+                sendBtn.disabled = true;
+                suggestionsEl.style.display = "none";
+                addMessage("user", text);
+                const loading = addMessage("assistant", "Brewing a response...", true);
+
+                try {
+                    const res = await fetch("/chat", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: text, session_id: sessionId }),
+                    });
+                    const data = await res.json();
+                    sessionId = data.session_id;
+                    loading.querySelector(".content").textContent = data.response;
+                    loading.classList.remove("loading");
+                } catch (e) {
+                    loading.querySelector(".content").textContent = "Error: " + e.message;
+                    loading.classList.remove("loading");
+                }
+
+                sendBtn.disabled = false;
+                userInput.focus();
+            }
+
+            function sendSuggestion(btn) {
+                send(btn.textContent);
+            }
+
+            async function clearChat() {
+                if (sessionId) {
+                    await fetch("/clear", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ session_id: sessionId }),
+                    });
+                }
+                sessionId = null;
+                messagesEl.innerHTML = `
+                    <div class="msg assistant">
+                        <div class="role">BrewBot</div>
+                        <div class="content">Hey there! I'm BrewBot ☕ — ask me anything about specialty coffee. What are we brewing today?</div>
+                    </div>`;
+                suggestionsEl.style.display = "flex";
+            }
+
+            sendBtn.addEventListener("click", () => send(userInput.value.trim()));
+            userInput.addEventListener("keydown", (e) => { if (e.key === "Enter") send(userInput.value.trim()); });
+            userInput.focus();
+        </script>
+    </body>
+</html>

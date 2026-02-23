@@ -20,6 +20,23 @@ DISTRESS_RESPONSE = (
     "24/7 by calling or texting 988 (US). You deserve real support. ☕"
 )
 
+# --- Adversarial / Jailbreak Patterns ---
+# Catch prompt injections and dangerous requests BEFORE they reach the LLM.
+ADVERSARIAL_PATTERNS = [
+    r"ignore (your|all|my) (previous )?(instructions|rules|guidelines|programming)",
+    r"pretend you are",
+    r"you are now",
+    r"\bno (restrictions|rules|guidelines|limits)\b",
+    r"\bjailbreak\b",
+    r"\b(bomb|weapon|hack|exploit|steal|illegal)\b",
+]
+
+ADVERSARIAL_RESPONSE = (
+    "That's outside BrewBot's expertise! I'm your go-to for anything "
+    "coffee brewing related — from dialing in your espresso to choosing "
+    "the right pour-over technique. ☕"
+)
+
 # --- Out-of-Scope Topics (keyword backstop) ---
 # These catch cases where the LLM answers something it shouldn't.
 # Maps a regex pattern to a friendly redirect message.
@@ -41,6 +58,12 @@ OUT_OF_SCOPE_PATTERNS = [
         "For health questions, please consult a healthcare professional. "
         "I'm happy to talk about coffee flavors, ratios, or brewing methods! ☕",
     ),
+    (
+        r"\b(cover letter|resume|job application|curriculum vitae)\b",
+        "That's outside BrewBot's expertise! I'm your go-to for anything "
+        "coffee brewing related — from dialing in your espresso to choosing "
+        "the right pour-over technique. ☕",
+    ),
 ]
 
 # --- LLM Refusal Bypass Detection ---
@@ -50,7 +73,6 @@ OUT_OF_SCOPE_PATTERNS = [
 REFUSAL_PHRASES = [
     "outside my expertise",
     "outside brewbot",
-    "i'm just a coffee",
     "coffee specialist",
     "brewbot focuses on",
     "not equipped to help",
@@ -71,6 +93,11 @@ def check_input(user_message: str) -> str | None:
     for pattern in DISTRESS_PATTERNS:
         if re.search(pattern, msg, re.IGNORECASE):
             return DISTRESS_RESPONSE
+
+    # Check adversarial / jailbreak patterns
+    for pattern in ADVERSARIAL_PATTERNS:
+        if re.search(pattern, msg, re.IGNORECASE):
+            return ADVERSARIAL_RESPONSE
 
     # Check out-of-scope topics
     for pattern, response in OUT_OF_SCOPE_PATTERNS:
